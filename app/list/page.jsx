@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { db } from '../lib/firebase'
 import {
   collection,
@@ -14,6 +15,7 @@ export default function ListPage() {
   const [items, setItems] = useState([])
   const [editing, setEditing] = useState({})
   const [selected, setSelected] = useState({})
+  const router = useRouter()
 
   useEffect(() => {
     async function fetchData() {
@@ -26,11 +28,14 @@ export default function ListPage() {
           selected: data.selected || false,
         }
       })
-      setItems(list)
+      // Move selected items to the bottom of the list
+      const sortedList = list.sort((a, b) => (a.selected === b.selected ? 0 : a.selected ? 1 : -1))
+
+      setItems(sortedList)
 
       const edits = {}
       const checks = {}
-      list.forEach(item => {
+      sortedList.forEach(item => {
         edits[item.docId] = {
           remark: item.remark || '',
           barcode: item.barcode || '',
@@ -47,10 +52,8 @@ export default function ListPage() {
   }, [])
 
   const handleDelete = async docId => {
-    console.log('🗑 Try deleting:', docId)
     try {
       await deleteDoc(doc(db, 'auctions', docId))
-      console.log('✅ Deleted:', docId)
       setItems(items.filter(item => item.docId !== docId))
     } catch (err) {
       console.error('❌ Delete failed:', err.message)
@@ -70,10 +73,8 @@ export default function ListPage() {
   const handleSave = async docId => {
     const data = editing[docId]
     const ref = doc(db, 'auctions', docId)
-    console.log('📤 Try saving:', docId, data)
     try {
       await updateDoc(ref, data)
-      console.log('✅ Saved:', docId)
       setItems(items.map(item => (item.docId === docId ? { ...item, ...data } : item)))
     } catch (err) {
       console.error('❌ Save failed:', err.message)
@@ -97,15 +98,21 @@ export default function ListPage() {
     setSelected(prev => ({ ...prev, [docId]: newValue }))
     try {
       await updateDoc(doc(db, 'auctions', docId), { selected: newValue })
-      console.log('✅ Selection saved:', docId, newValue)
     } catch (err) {
       console.error('❌ Failed to save selection:', err.message)
     }
   }
 
+  const handleGoToFinished = () => {
+    router.push('/finished')
+  }
+
   return (
     <div style={{ padding: 40 }}>
       <h1>Saved Yahoo Auctions</h1>
+      <button onClick={handleGoToFinished} style={{ marginBottom: 20 }}>
+        View Finished Items
+      </button>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20 }}>
         {items.map(item => (
           <div
@@ -123,7 +130,7 @@ export default function ListPage() {
                 checked={selected[item.docId] || false}
                 onChange={() => toggleSelect(item.docId)}
               />{' '}
-              Select
+              Finish
             </label>
 
             <img
