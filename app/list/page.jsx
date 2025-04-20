@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -162,11 +161,12 @@ export default function ListPage() {
                 <input
                   type="file"
                   onChange={e => handleImageChange(item.docId, e, 'image')}
-                  style={{ marginBottom: 4 }}
+                  style={{ display: 'block', marginBottom: 4 }}
                 />
                 <input
                   type="file"
                   onChange={e => handleImageChange(item.docId, e, 'image2')}
+                  style={{ display: 'block' }}
                 />
               </div>
 
