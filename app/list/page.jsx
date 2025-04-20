@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -28,9 +29,7 @@ export default function ListPage() {
           selected: data.selected || false,
         }
       })
-      // Move selected items to the bottom of the list
       const sortedList = list.sort((a, b) => (a.selected === b.selected ? 0 : a.selected ? 1 : -1))
-
       setItems(sortedList)
 
       const edits = {}
@@ -51,6 +50,29 @@ export default function ListPage() {
     fetchData()
   }, [])
 
+  const autoSave = async (docId, data) => {
+    try {
+      await updateDoc(doc(db, 'auctions', docId), data)
+      console.log('💾 Auto-saved:', docId)
+    } catch (err) {
+      console.error('❌ Auto-save failed:', err.message)
+    }
+  }
+
+  const handleChange = (docId, field, value) => {
+    setEditing(prev => {
+      const updated = {
+        ...prev,
+        [docId]: {
+          ...prev[docId],
+          [field]: value,
+        },
+      }
+      autoSave(docId, updated[docId])
+      return updated
+    })
+  }
+
   const handleDelete = async docId => {
     try {
       await deleteDoc(doc(db, 'auctions', docId))
@@ -60,31 +82,9 @@ export default function ListPage() {
     }
   }
 
-  const handleChange = (docId, field, value) => {
-    setEditing(prev => ({
-      ...prev,
-      [docId]: {
-        ...prev[docId],
-        [field]: value,
-      },
-    }))
-  }
-
-  const handleSave = async docId => {
-    const data = editing[docId]
-    const ref = doc(db, 'auctions', docId)
-    try {
-      await updateDoc(ref, data)
-      setItems(items.map(item => (item.docId === docId ? { ...item, ...data } : item)))
-    } catch (err) {
-      console.error('❌ Save failed:', err.message)
-    }
-  }
-
   const handleImageChange = async (docId, event) => {
     const file = event.target.files[0]
     if (!file) return
-
     const reader = new FileReader()
     reader.onloadend = () => {
       const base64 = reader.result
@@ -169,12 +169,6 @@ export default function ListPage() {
               style={{ width: '100%', marginTop: 8, padding: 4 }}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <button
-                onClick={() => handleSave(item.docId)}
-                style={{ marginTop: 8, padding: '4px 8px', fontSize: 12 }}
-              >
-                Save
-              </button>
               <button
                 onClick={() => handleDelete(item.docId)}
                 style={{ marginTop: 8, padding: '4px 8px', fontSize: 12, color: 'red' }}
