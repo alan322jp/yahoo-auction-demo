@@ -12,12 +12,23 @@ import {
 
 export default function ListPage() {
   const [items, setItems] = useState([])
+  const [editing, setEditing] = useState({})
 
   useEffect(() => {
     async function fetchData() {
       const snapshot = await getDocs(collection(db, 'auctions'))
       const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
       setItems(list)
+      const edits = {}
+      list.forEach(item => {
+        edits[item.id] = {
+          remark: item.remark || '',
+          barcode: item.barcode || '',
+          note: item.note || '',
+          image: item.image || '',
+        }
+      })
+      setEditing(edits)
     }
 
     fetchData()
@@ -28,9 +39,20 @@ export default function ListPage() {
     setItems(items.filter(item => item.id !== id))
   }
 
-  const handleFieldChange = async (id, field, value) => {
-    await updateDoc(doc(db, 'auctions', id), { [field]: value })
-    setItems(items.map(item => (item.id === id ? { ...item, [field]: value } : item)))
+  const handleChange = (id, field, value) => {
+    setEditing(prev => ({
+      ...prev,
+      [id]: {
+        ...prev[id],
+        [field]: value,
+      },
+    }))
+  }
+
+  const handleSave = async id => {
+    const data = editing[id]
+    await updateDoc(doc(db, 'auctions', id), data)
+    setItems(items.map(item => (item.id === id ? { ...item, ...data } : item)))
   }
 
   const handleImageChange = async (id, event) => {
@@ -38,10 +60,9 @@ export default function ListPage() {
     if (!file) return
 
     const reader = new FileReader()
-    reader.onloadend = async () => {
-      const imageBase64 = reader.result
-      await updateDoc(doc(db, 'auctions', id), { image: imageBase64 })
-      setItems(items.map(item => (item.id === id ? { ...item, image: imageBase64 } : item)))
+    reader.onloadend = () => {
+      const base64 = reader.result
+      handleChange(id, 'image', base64)
     }
     reader.readAsDataURL(file)
   }
@@ -55,7 +76,11 @@ export default function ListPage() {
             key={item.id}
             style={{ border: '1px solid #ccc', padding: 10, width: 250 }}
           >
-            <img src={item.image} alt={item.title} style={{ width: '100%' }} />
+            <img
+              src={editing[item.id]?.image || ''}
+              alt={item.title}
+              style={{ width: '100%' }}
+            />
             <input
               type="file"
               onChange={e => handleImageChange(item.id, e)}
@@ -68,30 +93,38 @@ export default function ListPage() {
             <input
               type="text"
               placeholder="Remark"
-              value={item.remark || ''}
-              onChange={e => handleFieldChange(item.id, 'remark', e.target.value)}
+              value={editing[item.id]?.remark || ''}
+              onChange={e => handleChange(item.id, 'remark', e.target.value)}
               style={{ width: '100%', marginTop: 8, padding: 4 }}
             />
             <input
               type="text"
               placeholder="Bar code"
-              value={item.barcode || ''}
-              onChange={e => handleFieldChange(item.id, 'barcode', e.target.value)}
+              value={editing[item.id]?.barcode || ''}
+              onChange={e => handleChange(item.id, 'barcode', e.target.value)}
               style={{ width: '100%', marginTop: 8, padding: 4 }}
             />
             <input
               type="text"
-              placeholder="Extra notes..."
-              value={item.note || ''}
-              onChange={e => handleFieldChange(item.id, 'note', e.target.value)}
+              placeholder="Note"
+              value={editing[item.id]?.note || ''}
+              onChange={e => handleChange(item.id, 'note', e.target.value)}
               style={{ width: '100%', marginTop: 8, padding: 4 }}
             />
-            <button
-              onClick={() => handleDelete(item.id)}
-              style={{ marginTop: 8, padding: '4px 8px', fontSize: 12 }}
-            >
-              Delete
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <button
+                onClick={() => handleSave(item.id)}
+                style={{ marginTop: 8, padding: '4px 8px', fontSize: 12 }}
+              >
+                Save
+              </button>
+              <button
+                onClick={() => handleDelete(item.id)}
+                style={{ marginTop: 8, padding: '4px 8px', fontSize: 12, color: 'red' }}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         ))}
       </div>
