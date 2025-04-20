@@ -17,11 +17,14 @@ export default function ListPage() {
   useEffect(() => {
     async function fetchData() {
       const snapshot = await getDocs(collection(db, 'auctions'))
-      const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      const list = snapshot.docs.map(docSnap => ({
+        docId: docSnap.id, // ← Firestore document ID
+        ...docSnap.data(),
+      }))
       setItems(list)
       const edits = {}
       list.forEach(item => {
-        edits[item.id] = {
+        edits[item.docId] = {
           remark: item.remark || '',
           barcode: item.barcode || '',
           note: item.note || '',
@@ -34,35 +37,48 @@ export default function ListPage() {
     fetchData()
   }, [])
 
-  const handleDelete = async id => {
-    await deleteDoc(doc(db, 'auctions', id))
-    setItems(items.filter(item => item.id !== id))
+  const handleDelete = async docId => {
+    console.log('🗑 Try deleting:', docId)
+    try {
+      await deleteDoc(doc(db, 'auctions', docId))
+      console.log('✅ Deleted:', docId)
+      setItems(items.filter(item => item.docId !== docId))
+    } catch (err) {
+      console.error('❌ Delete failed:', err.message)
+    }
   }
 
-  const handleChange = (id, field, value) => {
+  const handleChange = (docId, field, value) => {
     setEditing(prev => ({
       ...prev,
-      [id]: {
-        ...prev[id],
+      [docId]: {
+        ...prev[docId],
         [field]: value,
       },
     }))
   }
 
-  const handleSave = async id => {
-    const data = editing[id]
-    await updateDoc(doc(db, 'auctions', id), data)
-    setItems(items.map(item => (item.id === id ? { ...item, ...data } : item)))
+  const handleSave = async docId => {
+    const data = editing[docId]
+    const ref = doc(db, 'auctions', docId)
+    console.log('📤 Try saving:', docId, data)
+    try {
+      await updateDoc(ref, data)
+      console.log('✅ Saved:', docId)
+      setItems(items.map(item => (item.docId === docId ? { ...item, ...data } : item)))
+    } catch (err) {
+      console.error('❌ Save failed:', err.message)
+    }
   }
 
-  const handleImageChange = async (id, event) => {
+  const handleImageChange = async (docId, event) => {
     const file = event.target.files[0]
     if (!file) return
 
     const reader = new FileReader()
     reader.onloadend = () => {
       const base64 = reader.result
-      handleChange(id, 'image', base64)
+      handleChange(docId, 'image', base64)
     }
     reader.readAsDataURL(file)
   }
@@ -73,17 +89,17 @@ export default function ListPage() {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20 }}>
         {items.map(item => (
           <div
-            key={item.id}
+            key={item.docId}
             style={{ border: '1px solid #ccc', padding: 10, width: 250 }}
           >
             <img
-              src={editing[item.id]?.image || ''}
+              src={editing[item.docId]?.image || ''}
               alt={item.title}
               style={{ width: '100%' }}
             />
             <input
               type="file"
-              onChange={e => handleImageChange(item.id, e)}
+              onChange={e => handleImageChange(item.docId, e)}
               style={{ margin: '8px 0' }}
             />
             <h4 style={{ fontSize: 14 }}>{item.title}</h4>
@@ -93,33 +109,33 @@ export default function ListPage() {
             <input
               type="text"
               placeholder="Remark"
-              value={editing[item.id]?.remark || ''}
-              onChange={e => handleChange(item.id, 'remark', e.target.value)}
+              value={editing[item.docId]?.remark || ''}
+              onChange={e => handleChange(item.docId, 'remark', e.target.value)}
               style={{ width: '100%', marginTop: 8, padding: 4 }}
             />
             <input
               type="text"
               placeholder="Bar code"
-              value={editing[item.id]?.barcode || ''}
-              onChange={e => handleChange(item.id, 'barcode', e.target.value)}
+              value={editing[item.docId]?.barcode || ''}
+              onChange={e => handleChange(item.docId, 'barcode', e.target.value)}
               style={{ width: '100%', marginTop: 8, padding: 4 }}
             />
             <input
               type="text"
               placeholder="Note"
-              value={editing[item.id]?.note || ''}
-              onChange={e => handleChange(item.id, 'note', e.target.value)}
+              value={editing[item.docId]?.note || ''}
+              onChange={e => handleChange(item.docId, 'note', e.target.value)}
               style={{ width: '100%', marginTop: 8, padding: 4 }}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <button
-                onClick={() => handleSave(item.id)}
+                onClick={() => handleSave(item.docId)}
                 style={{ marginTop: 8, padding: '4px 8px', fontSize: 12 }}
               >
                 Save
               </button>
               <button
-                onClick={() => handleDelete(item.id)}
+                onClick={() => handleDelete(item.docId)}
                 style={{ marginTop: 8, padding: '4px 8px', fontSize: 12, color: 'red' }}
               >
                 Delete
