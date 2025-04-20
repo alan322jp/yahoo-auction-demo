@@ -16,7 +16,6 @@ export default function ListPage() {
   const [items, setItems] = useState([])
   const [editing, setEditing] = useState({})
   const [selected, setSelected] = useState({})
-  const [imageToggle, setImageToggle] = useState({})
   const router = useRouter()
 
   useEffect(() => {
@@ -35,7 +34,6 @@ export default function ListPage() {
 
       const edits = {}
       const checks = {}
-      const toggles = {}
       sortedList.forEach(item => {
         edits[item.docId] = {
           remark: item.remark || '',
@@ -45,11 +43,9 @@ export default function ListPage() {
           image2: item.image2 || '',
         }
         checks[item.docId] = item.selected || false
-        toggles[item.docId] = false
       })
       setEditing(edits)
       setSelected(checks)
-      setImageToggle(toggles)
     }
 
     fetchData()
@@ -98,13 +94,6 @@ export default function ListPage() {
     reader.readAsDataURL(file)
   }
 
-  const toggleImage = (docId) => {
-    setImageToggle(prev => ({
-      ...prev,
-      [docId]: !prev[docId],
-    }))
-  }
-
   const toggleSelect = async (docId) => {
     const newValue = !selected[docId]
     setSelected(prev => ({ ...prev, [docId]: newValue }))
@@ -126,87 +115,87 @@ export default function ListPage() {
         View Finished Items
       </button>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20 }}>
-        {items.map(item => {
-          const currentImage = imageToggle[item.docId] && editing[item.docId]?.image2
-            ? editing[item.docId]?.image2
-            : editing[item.docId]?.image
-          return (
-            <div
-              key={item.docId}
-              style={{
-                border: '1px solid #ccc',
-                padding: 10,
-                width: 250,
-                backgroundColor: selected[item.docId] ? '#d1e7dd' : 'white',
-              }}
-            >
-              <label style={{ display: 'block', marginBottom: 8 }}>
-                <input
-                  type="checkbox"
-                  checked={selected[item.docId] || false}
-                  onChange={() => toggleSelect(item.docId)}
-                />{' '}
-                Finish
-              </label>
-
-              <a href={currentImage} target="_blank">
-                <img
-                  src={currentImage}
-                  alt={item.title}
-                  style={{ width: '100%', cursor: 'pointer' }}
-                  onClick={() => toggleImage(item.docId)}
-                />
-              </a>
-
-              <div style={{ marginBottom: 8 }}>
-                <input
-                  type="file"
-                  onChange={e => handleImageChange(item.docId, e, 'image')}
-                  style={{ display: 'block', marginBottom: 4 }}
-                />
-                <input
-                  type="file"
-                  onChange={e => handleImageChange(item.docId, e, 'image2')}
-                  style={{ display: 'block' }}
-                />
-              </div>
-
-              <h4 style={{ fontSize: 14 }}>{item.title}</h4>
-              <a href={item.url} target="_blank" rel="noreferrer">
-                {item.id}
-              </a>
+        {items.map(item => (
+          <div
+            key={item.docId}
+            style={{
+              border: '1px solid #ccc',
+              padding: 10,
+              width: 250,
+              backgroundColor: selected[item.docId] ? '#d1e7dd' : 'white',
+            }}
+          >
+            <label style={{ display: 'block', marginBottom: 8 }}>
               <input
-                type="text"
-                placeholder="Remark"
-                value={editing[item.docId]?.remark || ''}
-                onChange={e => handleChange(item.docId, 'remark', e.target.value)}
-                style={{ width: '100%', marginTop: 8, padding: 4 }}
+                type="checkbox"
+                checked={selected[item.docId] || false}
+                onChange={() => toggleSelect(item.docId)}
+              />{' '}
+              Finish
+            </label>
+
+            <a href={editing[item.docId]?.image} target="_blank">
+              <img
+                src={editing[item.docId]?.image || ''}
+                alt={item.title}
+                style={{ width: '100%', cursor: 'pointer' }}
+              />
+            </a>
+
+            <div style={{ marginBottom: 8 }}>
+              <input
+                type="file"
+                onChange={e => handleImageChange(item.docId, e, 'image')}
+                style={{ display: 'block', marginBottom: 4 }}
               />
               <input
-                type="text"
-                placeholder="Bar code"
-                value={editing[item.docId]?.barcode || ''}
-                onChange={e => handleChange(item.docId, 'barcode', e.target.value)}
-                style={{ width: '100%', marginTop: 8, padding: 4 }}
+                type="file"
+                onChange={e => handleImageChange(item.docId, e, 'image2')}
+                style={{ display: 'block' }}
               />
-              <input
-                type="text"
-                placeholder="Note"
-                value={editing[item.docId]?.note || ''}
-                onChange={e => handleChange(item.docId, 'note', e.target.value)}
-                style={{ width: '100%', marginTop: 8, padding: 4 }}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <button
-                  onClick={() => handleDelete(item.docId)}
-                  style={{ marginTop: 8, padding: '4px 8px', fontSize: 12, color: 'red' }}
-                >
-                  Delete
-                </button>
-              </div>
             </div>
-          )
-        })}
+
+            {editing[item.docId]?.image2 && (
+              <a href={editing[item.docId]?.image2} target="_blank" style={{ fontSize: 12 }}>
+                📦 Sending Code
+              </a>
+            )}
+
+            <h4 style={{ fontSize: 14 }}>{item.title}</h4>
+            <a href={item.url} target="_blank" rel="noreferrer">
+              {item.id}
+            </a>
+            <input
+              type="text"
+              placeholder="Remark"
+              value={editing[item.docId]?.remark || ''}
+              onChange={e => handleChange(item.docId, 'remark', e.target.value)}
+              style={{ width: '100%', marginTop: 8, padding: 4 }}
+            />
+            <input
+              type="text"
+              placeholder="Bar code"
+              value={editing[item.docId]?.barcode || ''}
+              onChange={e => handleChange(item.docId, 'barcode', e.target.value)}
+              style={{ width: '100%', marginTop: 8, padding: 4 }}
+            />
+            <input
+              type="text"
+              placeholder="Note"
+              value={editing[item.docId]?.note || ''}
+              onChange={e => handleChange(item.docId, 'note', e.target.value)}
+              style={{ width: '100%', marginTop: 8, padding: 4 }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <button
+                onClick={() => handleDelete(item.docId)}
+                style={{ marginTop: 8, padding: '4px 8px', fontSize: 12, color: 'red' }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )
