@@ -18,11 +18,16 @@ export default function ListPage() {
   useEffect(() => {
     async function fetchData() {
       const snapshot = await getDocs(collection(db, 'auctions'))
-      const list = snapshot.docs.map(docSnap => ({
-        docId: docSnap.id,
-        ...docSnap.data(),
-      }))
+      const list = snapshot.docs.map(docSnap => {
+        const data = docSnap.data()
+        return {
+          docId: docSnap.id,
+          ...data,
+          selected: data.selected || false,
+        }
+      })
       setItems(list)
+
       const edits = {}
       const checks = {}
       list.forEach(item => {
@@ -32,7 +37,7 @@ export default function ListPage() {
           note: item.note || '',
           image: item.image || '',
         }
-        checks[item.docId] = false
+        checks[item.docId] = item.selected || false
       })
       setEditing(edits)
       setSelected(checks)
@@ -87,11 +92,15 @@ export default function ListPage() {
     reader.readAsDataURL(file)
   }
 
-  const toggleSelect = (docId) => {
-    setSelected(prev => ({
-      ...prev,
-      [docId]: !prev[docId]
-    }))
+  const toggleSelect = async (docId) => {
+    const newValue = !selected[docId]
+    setSelected(prev => ({ ...prev, [docId]: newValue }))
+    try {
+      await updateDoc(doc(db, 'auctions', docId), { selected: newValue })
+      console.log('✅ Selection saved:', docId, newValue)
+    } catch (err) {
+      console.error('❌ Failed to save selection:', err.message)
+    }
   }
 
   return (
