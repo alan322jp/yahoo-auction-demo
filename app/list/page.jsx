@@ -1,3 +1,5 @@
+'use client'
+
 // Next.js 14 App Router version (with Firebase Firestore)
 
 // app/api/fetchYahoo/route.js
@@ -42,7 +44,6 @@ const db = getFirestore(app)
 export { db }
 
 // app/input/page.jsx
-'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { db } from '../lib/firebase'
