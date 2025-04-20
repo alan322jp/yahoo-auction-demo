@@ -13,16 +13,18 @@ import {
 export default function ListPage() {
   const [items, setItems] = useState([])
   const [editing, setEditing] = useState({})
+  const [selected, setSelected] = useState({})
 
   useEffect(() => {
     async function fetchData() {
       const snapshot = await getDocs(collection(db, 'auctions'))
       const list = snapshot.docs.map(docSnap => ({
-        docId: docSnap.id, // ← Firestore document ID
+        docId: docSnap.id,
         ...docSnap.data(),
       }))
       setItems(list)
       const edits = {}
+      const checks = {}
       list.forEach(item => {
         edits[item.docId] = {
           remark: item.remark || '',
@@ -30,8 +32,10 @@ export default function ListPage() {
           note: item.note || '',
           image: item.image || '',
         }
+        checks[item.docId] = false
       })
       setEditing(edits)
+      setSelected(checks)
     }
 
     fetchData()
@@ -83,6 +87,13 @@ export default function ListPage() {
     reader.readAsDataURL(file)
   }
 
+  const toggleSelect = (docId) => {
+    setSelected(prev => ({
+      ...prev,
+      [docId]: !prev[docId]
+    }))
+  }
+
   return (
     <div style={{ padding: 40 }}>
       <h1>Saved Yahoo Auctions</h1>
@@ -90,8 +101,22 @@ export default function ListPage() {
         {items.map(item => (
           <div
             key={item.docId}
-            style={{ border: '1px solid #ccc', padding: 10, width: 250 }}
+            style={{
+              border: '1px solid #ccc',
+              padding: 10,
+              width: 250,
+              backgroundColor: selected[item.docId] ? '#d1e7dd' : 'white',
+            }}
           >
+            <label style={{ display: 'block', marginBottom: 8 }}>
+              <input
+                type="checkbox"
+                checked={selected[item.docId] || false}
+                onChange={() => toggleSelect(item.docId)}
+              />{' '}
+              Select
+            </label>
+
             <img
               src={editing[item.docId]?.image || ''}
               alt={item.title}
