@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -87,7 +88,11 @@ export default function ListPage() {
     if (!file) return
     const reader = new FileReader()
     reader.onloadend = () => {
-      const base64 = reader.result
+      let base64 = reader.result
+      if (field === 'image2' && !base64.startsWith('data:image/')) {
+        const mimeType = file.type
+        base64 = `data:${mimeType};base64,${base64}`
+      }
       handleChange(docId, field, base64)
     }
     reader.readAsDataURL(file)
