@@ -160,9 +160,17 @@ export default function ListPage() {
             </div>
 
             {editing[item.docId]?.image2 && (
-              <a href="#" onClick={() => window.open(editing[item.docId]?.image2, '_blank')}>
-  					📦 Sending Code
-				</a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  const imageUrl = editing[item.docId]?.image2
+                  if (imageUrl) window.open(imageUrl, '_blank')
+                }}
+                style={{ fontSize: 12 }}
+              >
+                📦 Sending Code
+              </a>
             )}
 
             <h4 style={{ fontSize: 14 }}>{item.title}</h4>
