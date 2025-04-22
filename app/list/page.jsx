@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -56,7 +57,6 @@ export default function ListPage() {
   const autoSave = async (docId, data) => {
     try {
       await updateDoc(doc(db, 'auctions', docId), data)
-      console.log('💾 Auto-saved:', docId)
     } catch (err) {
       console.error('❌ Auto-save failed:', err.message)
     }
@@ -91,10 +91,6 @@ export default function ListPage() {
     const reader = new FileReader()
     reader.onloadend = () => {
       let base64 = reader.result
-      if (field === 'image2' && !base64.startsWith('data:image/')) {
-        const mimeType = file.type
-        base64 = `data:${mimeType};base64,${base64}`
-      }
       handleChange(docId, field, base64)
     }
     reader.readAsDataURL(file)
@@ -177,19 +173,37 @@ export default function ListPage() {
             <img
               src={editing[item.docId]?.image || ''}
               alt={item.title}
-              className="w-full rounded-md cursor-pointer object-cover max-h-48 hover:opacity-80"
+              className="w-full h-auto rounded-md cursor-pointer hover:opacity-80"
               onClick={() => {
                 const image2 = editing[item.docId]?.image2
                 if (image2) setPopupImage(image2)
               }}
             />
 
-            <div className="my-3">
-              <input type="file" onChange={e => handleImageChange(item.docId, e, 'image')} className="block w-full text-sm mb-2" />
-              <input type="file" onChange={e => handleImageChange(item.docId, e, 'image2')} className="block w-full text-sm" />
+            <div className="my-3 space-y-2">
+              <div className="relative w-fit">
+                <label className="flex items-center gap-2 cursor-pointer text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded shadow">
+                  📎 Upload Main
+                  <input
+                    type="file"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    onChange={(e) => handleImageChange(item.docId, e, 'image')}
+                  />
+                </label>
+              </div>
+              <div className="relative w-fit">
+                <label className="flex items-center gap-2 cursor-pointer text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded shadow">
+                  🖼️ Upload Code
+                  <input
+                    type="file"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    onChange={(e) => handleImageChange(item.docId, e, 'image2')}
+                  />
+                </label>
+              </div>
             </div>
 
-            <h4 className="text-base font-semibold text-gray-800 truncate mb-1">{item.title}</h4>
+            <h4 className="text-base font-semibold text-gray-800 truncate mt-3 mb-1">{item.title}</h4>
             <a href={item.url} target="_blank" rel="noreferrer" className="text-blue-500 text-sm hover:underline">
               {item.id}
             </a>
