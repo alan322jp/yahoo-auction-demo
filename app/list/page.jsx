@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -123,15 +122,15 @@ export default function ListPage() {
 
   return (
     <div className="p-6 max-w-screen-xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Yahoo Auction Item List</h1>
+      <h1 className="text-2xl font-bold mb-4 text-gray-800 border-b pb-2">Yahoo Auction Item List</h1>
 
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
         <input
           type="text"
-          placeholder="Search title / remark / barcode"
+          placeholder="🔍 Search title / remark / barcode"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="border px-4 py-2 rounded-md w-full md:max-w-md shadow-sm"
+          className="border border-gray-300 px-4 py-2 rounded-md w-full md:max-w-md shadow-sm text-sm"
         />
         <div className="flex items-center gap-4">
           <label className="flex items-center text-sm text-gray-700">
@@ -143,68 +142,53 @@ export default function ListPage() {
             />
             Show only unfinished
           </label>
-          <button onClick={handleGoToFinished} className="bg-blue-600 text-white px-4 py-2 rounded-md shadow hover:bg-blue-700">
-            View Finished Items
+          <button onClick={handleGoToFinished} className="bg-yellow-400 text-black px-4 py-2 rounded-md shadow hover:bg-yellow-500 text-sm">
+            📁 View Finished
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {filteredItems.map(item => (
           <div
             key={item.docId}
-            className={`rounded-xl shadow p-4 border transition-all duration-150 ${selected[item.docId] ? 'bg-green-100' : 'bg-white'}`}
+            className={`rounded-md border border-gray-200 bg-white hover:shadow-md transition-all duration-150 p-3 text-sm flex flex-col gap-2 relative ${selected[item.docId] ? 'bg-green-50' : ''}`}
           >
-            <div className="flex justify-between items-center mb-3">
-              <label className="text-sm font-medium text-gray-700">
-                <input
-                  type="checkbox"
-                  className="mr-2"
-                  checked={selected[item.docId] || false}
-                  onChange={() => toggleSelect(item.docId)}
-                />
-                Finish
-              </label>
-              {selected[item.docId] && (
-                <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full">Completed</span>
-              )}
+            <div className="absolute top-2 left-2">
+              <input
+                type="checkbox"
+                className="mr-1"
+                checked={selected[item.docId] || false}
+                onChange={() => toggleSelect(item.docId)}
+              />
+              <span className="text-xs">Finish</span>
             </div>
+
+            {selected[item.docId] && (
+              <span className="absolute top-2 right-2 bg-green-600 text-white px-2 py-0.5 rounded-full text-[10px]">Completed</span>
+            )}
 
             <img
               src={editing[item.docId]?.image || ''}
               alt={item.title}
-              className="w-full h-auto rounded-md cursor-pointer hover:opacity-80"
+              className="w-full h-[180px] object-contain rounded-md cursor-pointer border"
               onClick={() => {
                 const image2 = editing[item.docId]?.image2
                 if (image2) setPopupImage(image2)
               }}
             />
 
-            <div className="my-3 space-y-2">
-              <div className="relative w-fit">
-                <label className="flex items-center gap-2 cursor-pointer text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded shadow">
-                  📎 Upload Main
-                  <input
-                    type="file"
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    onChange={(e) => handleImageChange(item.docId, e, 'image')}
-                  />
-                </label>
-              </div>
-              <div className="relative w-fit">
-                <label className="flex items-center gap-2 cursor-pointer text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded shadow">
-                  🖼️ Upload Code
-                  <input
-                    type="file"
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    onChange={(e) => handleImageChange(item.docId, e, 'image2')}
-                  />
-                </label>
-              </div>
+            <div className="flex gap-2 text-xs">
+              <label className="flex items-center gap-1 cursor-pointer text-gray-600">
+                📎<input type="file" className="hidden" onChange={e => handleImageChange(item.docId, e, 'image')} />Main
+              </label>
+              <label className="flex items-center gap-1 cursor-pointer text-gray-600">
+                🖼️<input type="file" className="hidden" onChange={e => handleImageChange(item.docId, e, 'image2')} />Code
+              </label>
             </div>
 
-            <h4 className="text-base font-semibold text-gray-800 truncate mt-3 mb-1">{item.title}</h4>
-            <a href={item.url} target="_blank" rel="noreferrer" className="text-blue-500 text-sm hover:underline">
+            <h4 className="font-medium leading-snug text-gray-900 truncate mt-2">{item.title}</h4>
+            <a href={item.url} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline truncate">
               {item.id}
             </a>
 
@@ -213,31 +197,29 @@ export default function ListPage() {
               placeholder="Remark"
               value={editing[item.docId]?.remark || ''}
               onChange={e => handleChange(item.docId, 'remark', e.target.value)}
-              className="w-full p-2 border rounded mt-2 text-sm"
+              className="w-full border border-gray-300 rounded px-2 py-1"
             />
             <input
               type="text"
               placeholder="Bar code"
               value={editing[item.docId]?.barcode || ''}
               onChange={e => handleChange(item.docId, 'barcode', e.target.value)}
-              className="w-full p-2 border rounded mt-2 text-sm"
+              className="w-full border border-gray-300 rounded px-2 py-1"
             />
             <input
               type="text"
               placeholder="Note"
               value={editing[item.docId]?.note || ''}
               onChange={e => handleChange(item.docId, 'note', e.target.value)}
-              className="w-full p-2 border rounded mt-2 text-sm"
+              className="w-full border border-gray-300 rounded px-2 py-1"
             />
 
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => handleDelete(item.docId)}
-                className="text-red-600 text-xs hover:underline"
-              >
-                Delete
-              </button>
-            </div>
+            <button
+              onClick={() => handleDelete(item.docId)}
+              className="text-red-600 text-xs hover:underline mt-1 self-end"
+            >
+              Delete
+            </button>
           </div>
         ))}
       </div>
