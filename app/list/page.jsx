@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -16,6 +15,7 @@ export default function ListPage() {
   const [items, setItems] = useState([])
   const [editing, setEditing] = useState({})
   const [selected, setSelected] = useState({})
+  const [popupImage, setPopupImage] = useState(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -138,13 +138,15 @@ export default function ListPage() {
               Finish
             </label>
 
-            <a href={editing[item.docId]?.image} target="_blank">
-              <img
-                src={editing[item.docId]?.image || ''}
-                alt={item.title}
-                style={{ width: '100%', cursor: 'pointer' }}
-              />
-            </a>
+            <img
+              src={editing[item.docId]?.image || ''}
+              alt={item.title}
+              style={{ width: '100%', cursor: 'pointer' }}
+              onClick={() => {
+                const image2 = editing[item.docId]?.image2
+                if (image2) setPopupImage(image2)
+              }}
+            />
 
             <div style={{ marginBottom: 8 }}>
               <input
@@ -158,20 +160,6 @@ export default function ListPage() {
                 style={{ display: 'block' }}
               />
             </div>
-
-            {editing[item.docId]?.image2 && (
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault()
-                  const imageUrl = editing[item.docId]?.image2
-                  if (imageUrl) window.open(imageUrl, '_blank')
-                }}
-                style={{ fontSize: 12 }}
-              >
-                📦 Sending Code
-              </a>
-            )}
 
             <h4 style={{ fontSize: 14 }}>{item.title}</h4>
             <a href={item.url} target="_blank" rel="noreferrer">
@@ -209,6 +197,25 @@ export default function ListPage() {
           </div>
         ))}
       </div>
+      {popupImage && (
+        <div
+          onClick={() => setPopupImage(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <img src={popupImage} alt="Preview" style={{ maxWidth: '90%', maxHeight: '90%' }} />
+        </div>
+      )}
     </div>
   )
 }
