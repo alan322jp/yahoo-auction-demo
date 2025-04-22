@@ -126,41 +126,41 @@ export default function ListPage() {
   })
 
   return (
-    <div className="p-6 max-w-screen-xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Yahoo Auction Item List</h1>
+    <div className="p-10">
+      <h1 className="text-2xl font-bold mb-6">Saved Yahoo Auctions</h1>
 
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-2 md:gap-4">
         <input
           type="text"
-          placeholder="Search title / remark / barcode"
+          placeholder="Search by title, remark or barcode"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="border px-4 py-2 rounded-md w-full md:max-w-md shadow-sm"
+          className="border px-3 py-2 rounded w-full md:max-w-md"
         />
-        <div className="flex items-center gap-4">
-          <label className="flex items-center text-sm text-gray-700">
+        <div className="flex items-center gap-3">
+          <label className="text-sm">
             <input
               type="checkbox"
               checked={showOnlyUnfinished}
               onChange={() => setShowOnlyUnfinished(!showOnlyUnfinished)}
-              className="mr-2"
+              className="mr-1"
             />
             Show only unfinished
           </label>
-          <button onClick={handleGoToFinished} className="bg-blue-600 text-white px-4 py-2 rounded-md shadow hover:bg-blue-700">
+          <button onClick={handleGoToFinished} className="bg-blue-600 text-white px-4 py-2 rounded shadow">
             View Finished Items
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredItems.map(item => (
           <div
             key={item.docId}
-            className={`rounded-xl shadow p-4 border transition-all duration-150 ${selected[item.docId] ? 'bg-green-100' : 'bg-white'}`}
+            className={`rounded-xl shadow-md p-4 border ${selected[item.docId] ? 'bg-green-100' : 'bg-white'}`}
           >
-            <div className="flex justify-between items-center mb-3">
-              <label className="text-sm font-medium text-gray-700">
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-sm font-medium">
                 <input
                   type="checkbox"
                   className="mr-2"
@@ -170,27 +170,27 @@ export default function ListPage() {
                 Finish
               </label>
               {selected[item.docId] && (
-                <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full">Completed</span>
+                <span className="text-xs px-2 py-1 bg-green-500 text-white rounded-full">Completed</span>
               )}
             </div>
 
             <img
               src={editing[item.docId]?.image || ''}
               alt={item.title}
-              className="w-full rounded-md cursor-pointer object-cover max-h-48 hover:opacity-80"
+              className="w-full h-auto rounded cursor-pointer hover:opacity-80"
               onClick={() => {
                 const image2 = editing[item.docId]?.image2
                 if (image2) setPopupImage(image2)
               }}
             />
 
-            <div className="my-3">
+            <div className="my-2">
               <input type="file" onChange={e => handleImageChange(item.docId, e, 'image')} className="block w-full text-sm mb-2" />
               <input type="file" onChange={e => handleImageChange(item.docId, e, 'image2')} className="block w-full text-sm" />
             </div>
 
-            <h4 className="text-base font-semibold text-gray-800 truncate mb-1">{item.title}</h4>
-            <a href={item.url} target="_blank" rel="noreferrer" className="text-blue-500 text-sm hover:underline">
+            <h4 className="text-sm font-semibold truncate mt-2">{item.title}</h4>
+            <a href={item.url} target="_blank" rel="noreferrer" className="text-blue-600 text-sm block mb-2">
               {item.id}
             </a>
 
@@ -199,21 +199,21 @@ export default function ListPage() {
               placeholder="Remark"
               value={editing[item.docId]?.remark || ''}
               onChange={e => handleChange(item.docId, 'remark', e.target.value)}
-              className="w-full p-2 border rounded mt-2 text-sm"
+              className="w-full p-2 border rounded mt-1 text-sm"
             />
             <input
               type="text"
               placeholder="Bar code"
               value={editing[item.docId]?.barcode || ''}
               onChange={e => handleChange(item.docId, 'barcode', e.target.value)}
-              className="w-full p-2 border rounded mt-2 text-sm"
+              className="w-full p-2 border rounded mt-1 text-sm"
             />
             <input
               type="text"
               placeholder="Note"
               value={editing[item.docId]?.note || ''}
               onChange={e => handleChange(item.docId, 'note', e.target.value)}
-              className="w-full p-2 border rounded mt-2 text-sm"
+              className="w-full p-2 border rounded mt-1 text-sm"
             />
 
             <div className="flex justify-end mt-4">
@@ -233,7 +233,7 @@ export default function ListPage() {
           onClick={() => setPopupImage(null)}
           className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
         >
-          <img src={popupImage} alt="Preview" className="max-w-[90%] max-h-[90%] rounded-lg shadow-lg object-contain" />
+          <img src={popupImage} alt="Preview" className="max-w-[90%] max-h-[90%] rounded-lg shadow-lg" />
         </div>
       )}
     </div>
