@@ -152,7 +152,7 @@ export default function ListPage() {
         {filteredItems.map(item => (
           <div
             key={item.docId}
-            className={`rounded-md border border-gray-200 bg-white hover:shadow-md transition-all duration-150 p-3 text-sm flex flex-col gap-2 relative ${selected[item.docId] ? 'bg-green-50' : ''}`}
+            className={`rounded-md border border-gray-200 bg-white hover:shadow-md transition-all duration-150 p-3 text-sm flex flex-col gap-2 relative ${selected[item.docId] ? 'bg-yellow-100 border-yellow-400' : ''}`}
           >
             <div className="absolute top-2 left-2">
               <input
