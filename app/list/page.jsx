@@ -132,7 +132,15 @@ export default function ListPage() {
   return (
     <div className="p-6 max-w-screen-xl mx-auto">
       <h1 className="text-2xl font-bold mb-4 text-gray-800 border-b pb-2">Yahoo Auction Item List</h1>
-
+<div className="mb-4">
+  <input
+    type="text"
+    placeholder="Search title / remark / barcode"
+    value={search}
+    onChange={e => setSearch(e.target.value)}
+    className="w-full max-w-md border border-gray-300 rounded px-4 py-2 shadow-sm"
+  />
+</div>
       <div className="flex flex-wrap gap-4 mb-6">
         {['all', 'sold', 'finish'].map(tab => (
           <button
