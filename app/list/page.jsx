@@ -11,34 +11,45 @@ import {
   updateDoc,
 } from 'firebase/firestore'
 
+function generateUID() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  const digits = '0123456789'
+  const randomChar = () => chars[Math.floor(Math.random() * chars.length)]
+  const randomDigit = () => digits[Math.floor(Math.random() * digits.length)]
+  return `${randomChar()}${randomDigit()}${randomDigit()}${randomDigit()}${randomChar()}`
+}
+
 export default function ListPage() {
   const [items, setItems] = useState([])
   const [editing, setEditing] = useState({})
-  const [selected, setSelected] = useState({})
   const [popupImage, setPopupImage] = useState(null)
   const [search, setSearch] = useState('')
-  const [showOnlyUnfinished, setShowOnlyUnfinished] = useState(false)
   const [filterStatus, setFilterStatus] = useState('all')
   const router = useRouter()
 
   useEffect(() => {
     async function fetchData() {
       const snapshot = await getDocs(collection(db, 'auctions'))
+      const updates = []
       const list = snapshot.docs.map(docSnap => {
         const data = docSnap.data()
+        const uid = data.uid || generateUID()
+        if (!data.uid) {
+          updates.push(updateDoc(doc(db, 'auctions', docSnap.id), { uid }))
+        }
         return {
           docId: docSnap.id,
           ...data,
-          selected: data.selected || false,
+          uid,
           sold: data.sold || false,
           finish: data.finish || false,
         }
       })
+      if (updates.length > 0) await Promise.all(updates)
       const sortedList = list.sort((a, b) => (a.finish === b.finish ? 0 : a.finish ? 1 : -1))
       setItems(sortedList)
 
       const edits = {}
-      const checks = {}
       sortedList.forEach(item => {
         edits[item.docId] = {
           remark: item.remark || '',
@@ -46,12 +57,10 @@ export default function ListPage() {
           note: item.note || '',
           image: item.image || '',
           image2: item.image2 || '',
-          uid: item.uid || item.docId,
+          uid: item.uid,
         }
-        checks[item.docId] = item.selected || false
       })
       setEditing(edits)
-      setSelected(checks)
     }
 
     fetchData()
@@ -112,10 +121,6 @@ export default function ListPage() {
     }
   }
 
-  const handleGoToFinished = () => {
-    router.push('/finished')
-  }
-
   const filteredItems = items.filter(item => {
     const keyword = search.toLowerCase()
     const matchKeyword = (
@@ -128,6 +133,12 @@ export default function ListPage() {
       || (filterStatus === 'finish' && item.finish)
     return matchKeyword && matchStatus
   })
+
+  const statusIcon = (item) => {
+    if (item.finish) return '✅'
+    if (item.sold) return '🛒'
+    return '⭕'
+  }
 
   return (
     <div className="p-6 max-w-screen-xl mx-auto">
@@ -153,14 +164,12 @@ export default function ListPage() {
               key={item.docId}
               className={`rounded-md border ${colorClass} hover:shadow-md transition-all duration-150 p-3 text-sm flex flex-col gap-2 relative`}
             >
-              <div className="absolute top-2 left-2">
-                <input
-                  type="checkbox"
-                  className="mr-1"
-                  onChange={() => toggleStatus(item.docId, item)}
-                />
-                <span className="text-xs">{item.finish ? 'Finish' : item.sold ? 'Sold' : 'Mark'}</span>
-              </div>
+              <button
+                onClick={() => toggleStatus(item.docId, item)}
+                className="absolute top-2 left-2 text-lg"
+              >
+                {statusIcon(item)}
+              </button>
 
               <img
                 src={editing[item.docId]?.image || ''}
@@ -172,7 +181,7 @@ export default function ListPage() {
                 }}
               />
 
-              <div className="text-lg font-bold text-gray-800 text-center">
+              <div className="text-2xl font-bold text-gray-800 text-center">
                 {editing[item.docId]?.uid || item.docId}
               </div>
 
