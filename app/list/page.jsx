@@ -145,7 +145,7 @@ export default function ListPage() {
         {['all', 'sold', 'finish'].map(tab => (
           <button
             key={tab}
-            className={px-4 py-2 rounded-full text-sm font-medium ${filterStatus === tab ? 'bg-yellow-500 text-white' : 'bg-gray-200 text-gray-700'}}
+            className={`px-4 py-2 rounded-full text-sm font-medium ${filterStatus === tab ? 'bg-yellow-500 text-white' : 'bg-gray-200 text-gray-700'}`}
             onClick={() => setFilterStatus(tab)}
           >
             {tab.toUpperCase()}
@@ -159,7 +159,7 @@ export default function ListPage() {
           return (
             <div
               key={item.docId}
-              className={rounded-md border ${colorClass} hover:shadow-md transition-all duration-150 p-3 text-sm flex flex-col gap-2 relative}
+              className={`rounded-md border ${colorClass} hover:shadow-md transition-all duration-150 p-3 text-sm flex flex-col gap-2 relative`}
             >
               <div className="absolute top-2 left-2">
                 <input
