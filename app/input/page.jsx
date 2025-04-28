@@ -5,7 +5,7 @@ import { db } from '../lib/firebase'
 import { collection, addDoc } from 'firebase/firestore'
 
 async function parseYahooAuction(url) {
-  const res = await fetch(`/api/fetchYahoo?url=${encodeURIComponent(url)}`)
+  const res = await fetch(/api/fetchYahoo?url=${encodeURIComponent(url)})
   const html = await res.text()
   const doc = new DOMParser().parseFromString(html, 'text/html')
 
@@ -22,13 +22,10 @@ export default function InputPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const urls = inputUrl.match(/https:\/\/auctions\.yahoo\.co\.jp\/jp\/auction\/\w+/g) || []
+    if (!inputUrl.includes('yahoo.co.jp')) return
 
-    for (const url of urls) {
-      const parsed = await parseYahooAuction(url)
-      await addDoc(collection(db, 'auctions'), parsed)
-    }
-
+    const parsed = await parseYahooAuction(inputUrl)
+    await addDoc(collection(db, 'auctions'), parsed)
     setInputUrl('')
     router.push('/list')
   }
@@ -41,7 +38,7 @@ export default function InputPage() {
           type="text"
           value={inputUrl}
           onChange={(e) => setInputUrl(e.target.value)}
-          placeholder="Paste Yahoo Auction URL(s)"
+          placeholder="Paste Yahoo Auction URL"
           style={{ width: '100%', padding: 8, fontSize: 16 }}
         />
         <button style={{ marginTop: 10, padding: '8px 16px' }} type="submit">
